@@ -31,9 +31,9 @@ const tokenize = (code: string): Token[] =>
     });
 
 type BinaryOperation = {
-  left: number | BinaryOperation;
+  left: Expression;
   op: Operation;
-  right: number | BinaryOperation;
+  right: Expression;
 };
 
 type Expression = BinaryOperation | number;
