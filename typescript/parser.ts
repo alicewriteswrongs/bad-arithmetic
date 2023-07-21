@@ -13,22 +13,55 @@ type Token = number | Operation;
 const isOperation = (arg: string | Operation | number): arg is Operation =>
   Object.keys(OPERATORS).includes(arg as string);
 
-const tokenize = (code: string): Token[] =>
-  code
-    .replace(/\s/g, "")
-    .split("")
-    .map((opOrNumber) => {
-      let parsed = parseInt(opOrNumber, 10);
-      if (!isNaN(parsed)) {
-        return parsed;
+enum TokenizerState {
+  Init,
+  ParsingNumber,
+  ParsedOperator,
+}
+
+/**
+ * A simple state-machine based tokenizer (it needs to be a little more
+ * involved to account for multiple-digit integers)
+ */
+const tokenize = (code: string): Token[] => {
+  const characters = code.replace(/\s/g, "").split("");
+
+  const tokens: Token[] = [];
+
+  let state: TokenizerState = TokenizerState.Init;
+
+  let buffer = "";
+
+  characters.forEach((opOrNumber) => {
+    let parsed = parseInt(opOrNumber, 10);
+
+    if (!isNaN(parsed)) {
+      if (state !== TokenizerState.ParsingNumber) {
+        buffer = opOrNumber;
+        state = TokenizerState.ParsingNumber;
+      } else {
+        buffer += opOrNumber;
       }
-      if (isOperation(opOrNumber)) {
-        return opOrNumber;
+    } else if (isOperation(opOrNumber)) {
+      if (state === TokenizerState.ParsingNumber) {
+        tokens.push(parseInt(buffer, 10));
+        buffer = "";
       }
+      state = TokenizerState.ParsedOperator;
+      tokens.push(opOrNumber);
+    } else {
       throw new Error(
         `Parsing error! Encountered an unparseable character: ${opOrNumber}`,
       );
-    });
+    }
+  });
+
+  if (buffer !== "") {
+    // there's a number waiting in there!
+    tokens.push(parseInt(buffer, 10));
+  }
+  return tokens;
+};
 
 type BinaryOperation = {
   left: Expression;
@@ -70,7 +103,7 @@ const parse = (tokens: Token[]): Expression => {
       left = { left, op, right };
     }
     return left;
-  }
+  };
 
   return prattParse(0);
 };
@@ -84,21 +117,26 @@ const evaluate = (expr: Expression): number => {
   const right = evaluate(expr.right);
 
   switch (expr.op) {
-    case "+": return left + right;
-    case "-": return left - right;
-    case "*": return left * right;
-    case "/": return left / right;
-    case "^": return Math.pow(left, right);
+    case "+":
+      return left + right;
+    case "-":
+      return left - right;
+    case "*":
+      return left * right;
+    case "/":
+      return left / right;
+    case "^":
+      return Math.pow(left, right);
   }
-}
+};
 
 const run = (ops: string) => {
   const tokens = tokenize(ops);
-  console.log('TOKENS', tokens);
+  console.log("TOKENS", tokens);
   const expr = parse(tokens);
-  console.log('EXPR', expr);
+  console.log("EXPR", expr);
   const value = evaluate(expr);
-  console.log('VALUE', value);
-}
+  console.log("VALUE", value);
+};
 
-run("1 + 2 * 3 ")
+run("1 + 22 * 3 ");
