@@ -21,6 +21,8 @@ let tokenize s =
     | Some int -> Some (TokenNum int)
     | None -> to_op s
   in
-  s |> String.split ~on:' '
+  s
+  |> String.split ~on:' '
   |> List.filter ~f:(fun s -> not (String.is_empty s))
-  |> List.map ~f |> Option.all
+  |> List.map ~f
+  |> Option.all
