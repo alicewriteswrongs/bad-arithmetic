@@ -32,7 +32,7 @@ const tokenize = (code: string): Token[] => {
 
   let buffer = "";
 
-  characters.forEach((opOrNumber) => {
+  for (const opOrNumber of characters) {
     let parsed = parseInt(opOrNumber, 10);
 
     if (!isNaN(parsed)) {
@@ -54,7 +54,7 @@ const tokenize = (code: string): Token[] => {
         `Parsing error! Encountered an unparseable character: ${opOrNumber}`,
       );
     }
-  });
+  }
 
   if (buffer !== "") {
     // there's a number waiting in there!
@@ -71,6 +71,11 @@ type BinaryOperation = {
 
 type Expression = BinaryOperation | number;
 
+/**
+ * Parse a list of tokens into a single `Expression`!
+ *
+ * This uses a recursive function internally
+ */
 const parse = (tokens: Token[]): Expression => {
   tokens = tokens.concat();
   if (tokens.length === 0) {
